@@ -32,3 +32,7 @@ $ cmake --build build/release --config Release -- lifegame
 # Run
 $ build\release\lifegame\lifegame.exe
 ```
+
+### Using Library
+- [STC - Smart Template Containers](https://github.com/stclib/STC)
+- [raylib](https://github.com/raysan5/raylib)
