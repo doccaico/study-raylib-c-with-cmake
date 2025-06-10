@@ -18,10 +18,13 @@ int main(void)
     game_grid_init(&grid);
 
     while (!WindowShouldClose()) {
-
-
         BeginDrawing();
         ClearBackground(RAYWHITE);
+
+        if (!game_grid_update(&grid)) {
+            break; // game over
+        }
+
 
         EndDrawing();
     }

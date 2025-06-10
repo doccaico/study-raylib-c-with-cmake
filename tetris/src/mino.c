@@ -1,11 +1,18 @@
 #include "raylib.h"
 
 #include "mino.h"
+#include "utils.h"
 
 
-void mino_init(Mino* mino, Color color, bool is_dynamic) {
+Mino* mino_init(Color color, bool is_dynamic)
+{
+
+	Mino* mino = malloc_or_die(sizeof(Mino));
+
     mino->color = color;
     mino->is_dynamic = is_dynamic;
+
+    return mino;
 }
 
 Color mino_get_color(Mino* mino) {

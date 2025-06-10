@@ -12,10 +12,10 @@ typedef struct {
 } Mino;
 
 
-void mino_init(Mino* mino, Color color, bool is_dynamic);
+void mino_init(Color color, bool is_dynamic);
 Color mino_get_color(Mino* mino);
 bool mino_get_is_dynamic(Mino* mino);
-void mino_set_is_dynamic(Mino* mino, bool new_state);
+Mino* mino_set_is_dynamic(Mino* mino, bool new_state);
 
 
 #endif // MINO_H_

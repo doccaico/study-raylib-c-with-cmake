@@ -16,7 +16,14 @@ void input_state_init(InputState* input_state)
 
 void game_grid_init(GameGrid* game_grid)
 {
-    game_grid->grid = (vec_mino){0};
+    game_grid->grid = (vec_mm){0};
+
+	for (int i = 0; i < MAX_PIECE_QUEUE; ++i) {
+		// upcomingPieces.push_back(pickNewPiece());
+        vec_piece_type_push(&game_grid->upcoming_pieces, game_grid_pick_new_piece(game_grid));
+    }
+
+
     game_grid->upcoming_pieces = (vec_piece_type){0};
     game_grid->bag = (vec_piece_type){0};
     game_grid->held_piece = NULL;
@@ -30,3 +37,24 @@ void game_grid_init(GameGrid* game_grid)
     game_grid->lines_cleared = 0;
     game_grid->speed = 1.0f;
 }
+
+bool game_grid_update(GameGrid* game_grid)
+{
+
+    return true;
+}
+
+PieceType game_grid_pick_new_piece(GameGrid* game_grid)
+{
+	if (vec_piece_type_is_empty(&game_grid->bag)) {
+        // TODO
+		// bag = ShapeManager::getBag();
+		// game_grid->bag = shape_manager_get_bag();
+    }
+	// int pieceIndex = rand() % bag.size();
+	// PieceType piece = bag[pieceIndex];
+	// bag.erase(bag.begin() + pieceIndex);
+	// return piece;
+	return 0;
+}
+
