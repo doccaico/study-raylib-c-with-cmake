@@ -8,7 +8,7 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
         /utf-8 -Oi -fp:precise -MP -FC -GF)
     target_compile_options(${PROJECT_NAME} PRIVATE
-        -W4 -WX -wd4100 -wd4101 -wd4127 -wd4146 -wd4505 -wd4456 -wd4457)
+        -W4 -wd4100 -wd4101 -wd4127 -wd4146 -wd4505 -wd4456 -wd4457)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         -DUNICODE -D_UNICODE)
 
