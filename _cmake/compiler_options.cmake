@@ -13,7 +13,7 @@ if (MSVC)
         -DUNICODE -D_UNICODE)
 
     target_link_options(${PROJECT_NAME} PRIVATE
-        /libpath:${CMAKE_SOURCE_DIR}/vendor/raylib/lib)
+        /libpath:${CMAKE_SOURCE_DIR}/_vendor/raylib/lib)
 
 
     # Release
@@ -33,8 +33,8 @@ if (MSVC)
         $<$<CONFIG:Debug>:/NODEFAULTLIB:msvcrt>)
 
     target_include_directories(${PROJECT_NAME} PRIVATE 
-        ${CMAKE_SOURCE_DIR}/vendor/stc/include
-        ${CMAKE_SOURCE_DIR}/vendor/raylib/include)
+        ${CMAKE_SOURCE_DIR}/_vendor/stc/include
+        ${CMAKE_SOURCE_DIR}/_vendor/raylib/include)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib)
 endif()
