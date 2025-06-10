@@ -19,19 +19,29 @@ if (MSVC)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         -DUNICODE -D_UNICODE)
 
+    target_link_options(${PROJECT_NAME} PRIVATE
+        /libpath:${CMAKE_SOURCE_DIR}/vendor/raylib/lib)
+
+
     # Release
     target_compile_options(${PROJECT_NAME} PRIVATE 
         $<$<CONFIG:Release>: -O2 -MT>)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Release>:NDEBUG _NDEBUG>)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup /NODEFAULTLIB:libcmt>)
 
     # Debug
     target_compile_options(${PROJECT_NAME} PRIVATE 
         $<$<CONFIG:Debug>: -Od -MDd>)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:DEBUG _DEBUG>)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:/NODEFAULTLIB:msvcrt>)
 
     target_include_directories(${PROJECT_NAME} PRIVATE 
         ${CMAKE_SOURCE_DIR}/vendor/stc/include
         ${CMAKE_SOURCE_DIR}/vendor/raylib/include)
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib)
 endif()
