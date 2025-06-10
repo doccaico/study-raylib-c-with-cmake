@@ -51,7 +51,6 @@ void initialize_grid(void)
             grid[i][j] = (1 <= j && j <= INITIAL_CELL_COUNT) ? 1 : 0;
         }
     }
-
 }
 
 void swap(int *a, int *b)
