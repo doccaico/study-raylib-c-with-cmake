@@ -36,5 +36,10 @@ if (MSVC)
         ${CMAKE_SOURCE_DIR}/_vendor/stc/include
         ${CMAKE_SOURCE_DIR}/_vendor/raylib/include)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib)
+    # test (STC)
+    # set(MY_SOURCES ${CMAKE_SOURCE_DIR}/src/containers/vec.c)
+    # # add_library(vec.lib SHARED ${MY_SOURCES})
+    # add_library(vec.lib STATIC ${MY_SOURCES})
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib vec.lib)
 endif()

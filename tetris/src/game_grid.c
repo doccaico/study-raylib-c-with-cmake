@@ -1,5 +1,10 @@
 #include "game_grid.h"
-#include "constants.h"
+// #include "mino.h"
+//
+// #define T box_mino, Mino //, (c_keyclass)
+// #include "stc/box.h"
+
+
 
 
 void input_state_init(InputState* input_state)

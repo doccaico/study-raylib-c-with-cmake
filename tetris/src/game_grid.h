@@ -3,21 +3,10 @@
 
 #include "raylib.h"
 
-#include "mino.h"
 #include "structs.h"
+#include "constants.h"
+#include "containers/vec.h"
 
-#define T box_mino, Mino
-#include "stc/box.h"
-
-#define T vec_mino, box_mino
-#include "stc/vec.h"
-
-// #define T vec_mm, vec_mino, (c_valpro)
-#define T vec_mm, vec_mino, (c_keyclass)
-#include "stc/vec.h"
-
-#define T vec_piece_type, PieceType
-#include "stc/vec.h"
 
 typedef struct {
     bool right_pressed_last_frameg; // move right
