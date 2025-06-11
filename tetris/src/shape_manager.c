@@ -117,19 +117,19 @@ PieceType piece_type_from_int(int n)
             ret = 1;
             break;
         case L:
-            ret = 1;
+            ret = 2;
             break;
         case O:
-            ret = 1;
+            ret = 3;
             break;
         case T:
-            ret = 1;
+            ret = 4;
             break;
         case S:
-            ret = 1;
+            ret = 5;
             break;
         case Z:
-            ret = 1;
+            ret = 6;
             break;
         default:
             assert(0 && "reach unreachable (piece_type_from_int)");
