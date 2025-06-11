@@ -9,14 +9,14 @@
 
 
 typedef struct {
-    bool right_pressed_last_frameg; // move right
-    bool left_pressed_last_frameg; // move left
-    bool down_pressed_last_frameg; // drop faster
-    bool up_pressed_last_frameg; // rotate
-    bool space_pressed_last_frameg; // hard drop
-    bool a_pressed_last_frameg; // rotate left
-    bool d_pressed_last_frameg; // rotate right
-    bool shift_pressed_last_frameg; // rotate right
+    bool right_pressed_last_frame; // move right
+    bool left_pressed_last_frame; // move left
+    bool down_pressed_last_frame; // drop faster
+    bool up_pressed_last_frame; // rotate
+    bool space_pressed_last_frame; // hard drop
+    bool a_pressed_last_frame; // rotate left
+    bool d_pressed_last_frame; // rotate right
+    bool shift_pressed_last_frame; // rotate right
 } InputState;
 
 typedef struct {
@@ -40,9 +40,10 @@ typedef struct {
 
 
 void input_state_init(InputState* input_state);
-void game_grid_init(GameGrid* game_grid);
-bool game_grid_update(GameGrid* game_grid);
-PieceType game_grid_pick_new_piece(GameGrid* game_grid);
+void game_grid_init(GameGrid* gg);
+bool game_grid_update(GameGrid* gg);
+PieceType game_grid_pick_new_piece(GameGrid* gg);
+bool game_grid_move_dynamic_minos(int right, int down);
 
 
 #endif // GAME_GRID_H_

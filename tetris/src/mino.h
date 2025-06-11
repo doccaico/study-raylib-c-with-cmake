@@ -9,14 +9,20 @@
 // #include "game_grid.h"
 // #include "constants.h"
 
-typedef struct {
+// typedef struct {
+//     Color color;
+//     bool is_dynamic;
+// } Mino;
+
+struct Mino_t{
     Color color;
     bool is_dynamic;
-} Mino;
-
+};
+typedef struct Mino_t Mino;
 
 
 // box_mino mino_init(Color color, bool is_dynamic);
+Mino* mino_init(Color color, bool is_dynamic);
 
 // struct Mino_t;
 //

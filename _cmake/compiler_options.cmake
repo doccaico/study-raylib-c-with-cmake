@@ -10,7 +10,7 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -W4 -wd4100 -wd4101 -wd4127 -wd4146 -wd4505 -wd4456 -wd4457)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
-        -DUNICODE -D_UNICODE)
+        UNICODE _UNICODE)
 
     target_link_options(${PROJECT_NAME} PRIVATE
         /libpath:${CMAKE_SOURCE_DIR}/_vendor/raylib/lib)
@@ -41,5 +41,5 @@ if (MSVC)
     # # add_library(vec.lib SHARED ${MY_SOURCES})
     # add_library(vec.lib STATIC ${MY_SOURCES})
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib vec.lib)
+    target_link_libraries(${PROJECT_NAME} PRIVATE raylib.lib winmm.lib)
 endif()
