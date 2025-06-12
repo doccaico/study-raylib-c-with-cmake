@@ -5,14 +5,6 @@
 
 #include "yacc.h"
 
-#define i_implement
-#include "stc/cstr.h"
-
-#define T hmap_texture2d
-#define i_keypro cstr
-#define i_val Texture2D
-#include "stc/hashmap.h"
-
 #ifdef _DEBUG
 #define WINDOW_TITLE "flappy (debug)"
 #else
@@ -82,32 +74,44 @@ typedef struct {
     Scene scene;
 } Game;
 
+typedef enum {
+    GOPHER,
+    SKY,
+    WALL,
+} FILE_ID;
+
 
 // Forward Declaration
-void load_textures(const char* assets_path, const char** file_names, const char* suffix, size_t len);
+void load_textures(void);
 void init_game (Game* game);
 void draw_title(Game* game);
 void draw_game(Game* game);
 void draw_game_over(Game* game);
 
 // Global Variables
-hmap_texture2d textures = {0};
+const char* file_names[3] = {
+    "gopher",
+    "sky",
+    "wall",
+};
+Texture2D textures[3];
+const char* assets_path = "assets/";
+const char* suffix = ".png";
 
 
-void load_textures(const char* assets_path, const char** file_names, const char* suffix, size_t len)
+void load_textures(void)
 {
     char path[32];
-    for (int i = 0; i < len; ++i) {
+    size_t len = sizeof(file_names) / sizeof(file_names[0]);
+    for (size_t i = 0; i < len; ++i) {
         strcpy(path, assets_path);
         strcat(path, file_names[i]);
         strcat(path, suffix);
 
         Image asset = LoadImage(path);
-        Texture2D texture = LoadTextureFromImage(asset);
 
-        const char* key = file_names[i];
-        puts(key);
-        hmap_texture2d_emplace(&textures, key, texture);
+        Texture2D texture = LoadTextureFromImage(asset);
+        textures[i] = texture;
 
         UnloadImage(asset);
     }
@@ -134,9 +138,9 @@ void init_game(Game* game)
 
 void draw_title(Game* game)
 {
-    DrawTexture(*hmap_texture2d_at(&textures, "sky"), 0, 0, WHITE);
+    DrawTexture(textures[SKY], 0, 0, WHITE);
     DrawText("Click!", (WINDOW_WIDTH / 2) - 40, WINDOW_HEIGHT / 2, 20, WHITE);
-    DrawTexture(*hmap_texture2d_at(&textures, "gopher"), (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->scene = Game_Play;
     }
@@ -174,8 +178,8 @@ void draw_game(Game* game)
         game->old_score = game->new_score;
     }
 
-    DrawTexture(*hmap_texture2d_at(&textures, "sky"), 0, 0, WHITE);
-    DrawTexture(*hmap_texture2d_at(&textures, "gopher"), (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[SKY], 0, 0, WHITE);
+    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
 
     for (size_t i = 0; i < game->walls.len; ++i) {
@@ -185,9 +189,9 @@ void draw_game(Game* game)
         float y = game->gopher.y;
 
         // 上の壁の描画
-        DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y - WALL_HEIGHT, WHITE);
+        DrawTexture(textures[WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
         // 下の壁の描画
-        DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y + HOLE_HEIGHT, WHITE);
+        DrawTexture(textures[WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
 
         // gopherを表す四角形を作る
         int g_left = (int)x;
@@ -233,14 +237,14 @@ void draw_game(Game* game)
 
 void draw_game_over(Game* game)
 {
-    DrawTexture(*hmap_texture2d_at(&textures, "sky"), 0, 0, WHITE);
-    DrawTexture(*hmap_texture2d_at(&textures, "gopher"), (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[SKY], 0, 0, WHITE);
+    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
     for (size_t i = 0; i < game->walls.len; ++i) {
         int wall_x = game->walls.items[i].wall_x;
         int hole_y = game->walls.items[i].hole_y;
-        DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y - WALL_HEIGHT, WHITE);
-        DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y + HOLE_HEIGHT, WHITE);
+        DrawTexture(textures[WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
+        DrawTexture(textures[WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
     }
     DrawText("Game Over", (WINDOW_WIDTH / 2) - 60, (WINDOW_HEIGHT / 2) - 60, 20, WHITE);
 
@@ -261,14 +265,7 @@ int main(void)
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FPS);
 
-    const char* assets_path = "assets/";
-    const char* file_names[] = {
-        "gopher",
-        "sky",
-        "wall",
-    };
-    const char* suffix = ".png";
-    load_textures(assets_path, file_names, suffix, sizeof(file_names) / sizeof(file_names[0]));
+    load_textures();
 
     Game game;
     init_game(&game);
@@ -313,7 +310,6 @@ int main(void)
     }
 
     UnloadRenderTexture(render_texture);
-    hmap_texture2d_drop(&textures);
     if (!da_is_null(game.walls)) {
         da_clear_and_free(game.walls);
     }

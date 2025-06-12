@@ -10,7 +10,7 @@ if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -W4 -wd4100 -wd4101 -wd4127 -wd4146 -wd4505 -wd4456 -wd4457)
     target_compile_definitions(${PROJECT_NAME} PRIVATE
-        UNICODE _UNICODE)
+        UNICODE _UNICODE _CRT_SECURE_NO_WARNINGS)
 
     target_link_options(${PROJECT_NAME} PRIVATE
         /libpath:${CMAKE_SOURCE_DIR}/_vendor/raylib/lib)
