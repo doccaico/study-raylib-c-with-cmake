@@ -79,6 +79,9 @@
 // Invalidates all element pointers, but retaining capacity.
 #define da_clear_retaining_capacity(da) (da).len = 0
 
+// Whether items is NULL or not.
+#define da_is_null(da) ((da).items == NULL)
+
 // Append several items to the da.
 #define da_append_many(da, new_items, new_items_len)                                         \
     do {                                                                                     \

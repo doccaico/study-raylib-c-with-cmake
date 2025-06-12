@@ -1,11 +1,17 @@
-// #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "raylib.h"
 
+#include "yacc_da.h"
+
 #define i_implement
 #include "stc/cstr.h"
+
+#define T hmap_texture2d
+#define i_keypro cstr
+#define i_val Texture2D
+#include "stc/hashmap.h"
 
 #ifdef _DEBUG
 #define WINDOW_TITLE "flappy (debug)"
@@ -13,59 +19,56 @@
 #define WINDOW_TITLE "flappy"
 #endif
 
-#define WINDOW_WIDTH (640)
-#define WINDOW_HEIGHT (360)
-#define FPS (60)
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 360
+#define FPS 60
 
-#define JUMP (-4.0)
+#define JUMP -4.0
 // 壁の追加間隔
-#define INTERVAL (120)
+#define INTERVAL 120
 // 壁の初期x座標
-#define WALL_START_X (640)
+#define WALL_START_X 640
 // 穴のy座標の最大値
-#define HOLE_Y_MAX (150)
+#define HOLE_Y_MAX 150
 // GOPHERの幅
-#define GOPHER_WIDTH (60)
+#define GOPHER_WIDTH 60
 // GOPHERの高さ
-#define GOPHER_HEIGHT (75)
+#define GOPHER_HEIGHT 75
 // 穴のサイズ（高さ）
-#define HOLE_HEIGHT (170)
+#define HOLE_HEIGHT 170
 // 壁の高さ
-#define WALL_HEIGHT (360)
+#define WALL_HEIGHT 360
 // 壁の幅
-#define WALL_WIDTH (20)
-
-
-#define T hmap_texture2d
-#define i_keypro cstr
-#define i_val Texture2D
-#include "stc/hashmap.h"
+#define WALL_WIDTH 20
 
 typedef enum {
     Game_Title,
     Game_Play,
     Game_Over,
-}Scene;
+} Scene;
 
 typedef struct {
     char* key;
     Texture2D value;
-}StringMap;
+} StringMap;
 
 typedef struct {
     float x;
     float y;
     int width;
     int height;
-}Gopher;
+} Gopher;
 
 typedef struct {
     int wall_x;
     int hole_y;
-}Wall;
+} Wall;
 
-#define T vec_wall, Wall
-#include "stc/vec.h"
+typedef struct {
+    Wall *items;
+    size_t len;
+    size_t capacity;
+} DaWall;
 
 typedef struct {
     Gopher gopher;
@@ -75,10 +78,9 @@ typedef struct {
     int old_score;
     int new_score;
     const char* score_string;
-    vec_wall walls;
+    DaWall walls;
     Scene scene;
-}Game;
-
+} Game;
 
 
 // Forward Declaration
@@ -127,7 +129,7 @@ void init_game(Game* game)
     game->new_score = 0;
     game->score_string = "Score: 0";
     game->scene = Game_Title;
-    game->walls = (vec_wall){0};
+    game->walls = (DaWall){0};
 }
 
 void draw_title(Game* game)
@@ -152,17 +154,17 @@ void draw_game(Game* game)
     if (game->frames % INTERVAL == 0) {
         int min = 0, max = HOLE_Y_MAX - 1;
         int rand_num = rand() % (max - min + 1) + min;
-        vec_wall_push(&game->walls, (Wall){.wall_x = WALL_START_X, .hole_y = rand_num});
+        da_append(&game->walls, ((Wall){.wall_x = WALL_START_X, .hole_y = rand_num}));
     }
 
     // wallを左へ移動
-    for (int i = 0; i < vec_wall_size(&game->walls); ++i) {
-        game->walls.data[i].wall_x -= 2;
+    for (size_t i = 0; i < game->walls.len; ++i) {
+        game->walls.items[i].wall_x -= 2;
     }
 
     // スコアを計算
-    for (int i = 0; i < vec_wall_size(&game->walls); ++i) {
-        if (game->walls.data[i].wall_x < (int)game->gopher.x) {
+    for (size_t i = 0; i < game->walls.len; ++i) {
+        if (game->walls.items[i].wall_x < (int)game->gopher.x) {
             game->new_score = (int)i + 1;
         }
     }
@@ -176,9 +178,9 @@ void draw_game(Game* game)
     DrawTexture(*hmap_texture2d_at(&textures, "gopher"), (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
 
-    for (int i = 0; i < vec_wall_size(&game->walls); ++i) {
-        int wall_x = game->walls.data[i].wall_x;
-        int hole_y = game->walls.data[i].hole_y;
+    for (size_t i = 0; i < game->walls.len; ++i) {
+        int wall_x = game->walls.items[i].wall_x;
+        int hole_y = game->walls.items[i].hole_y;
         float x = game->gopher.x;
         float y = game->gopher.y;
 
@@ -234,9 +236,9 @@ void draw_game_over(Game* game)
     DrawTexture(*hmap_texture2d_at(&textures, "sky"), 0, 0, WHITE);
     DrawTexture(*hmap_texture2d_at(&textures, "gopher"), (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
-    for (int i = 0; i < vec_wall_size(&game->walls); ++i) {
-        int wall_x = game->walls.data[i].wall_x;
-        int hole_y = game->walls.data[i].hole_y;
+    for (size_t i = 0; i < game->walls.len; ++i) {
+        int wall_x = game->walls.items[i].wall_x;
+        int hole_y = game->walls.items[i].hole_y;
         DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y - WALL_HEIGHT, WHITE);
         DrawTexture(*hmap_texture2d_at(&textures, "wall"), wall_x, hole_y + HOLE_HEIGHT, WHITE);
     }
@@ -247,7 +249,7 @@ void draw_game_over(Game* game)
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->scene = Game_Title;
-        vec_wall_drop(&game->walls);
+        da_clear_and_free(game->walls);
         init_game(game);
     }
 }
@@ -312,7 +314,9 @@ int main(void)
 
     UnloadRenderTexture(render_texture);
     hmap_texture2d_drop(&textures);
-    vec_wall_drop(&game.walls);
+    if (!da_is_null(game.walls)) {
+        da_clear_and_free(game.walls);
+    }
 
     CloseWindow();
 

@@ -33,6 +33,7 @@ if (MSVC)
         $<$<CONFIG:Debug>:/NODEFAULTLIB:msvcrt>)
 
     target_include_directories(${PROJECT_NAME} PRIVATE 
+        ${CMAKE_SOURCE_DIR}/_vendor/yacc
         ${CMAKE_SOURCE_DIR}/_vendor/stc/include
         ${CMAKE_SOURCE_DIR}/_vendor/raylib/include)
 
