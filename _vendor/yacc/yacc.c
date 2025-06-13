@@ -5,3 +5,6 @@
 
 #define YACC_SB_IMPLEMENTATION
 #include "yacc_sb.h"
+
+#define YACC_MAP_IMPLEMENTATION
+#include "yacc_map.h"
