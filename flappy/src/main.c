@@ -35,15 +35,10 @@
 #define WALL_WIDTH 20
 
 typedef enum {
-    Game_Title,
-    Game_Play,
-    Game_Over,
+    SCENE_GAME_TITLE,
+    SCENE_GAME_PLAY,
+    SCENE_GAME_OVER,
 } Scene;
-
-typedef struct {
-    char* key;
-    Texture2D value;
-} StringMap;
 
 typedef struct {
     float x;
@@ -76,18 +71,18 @@ typedef struct {
 } Game;
 
 typedef enum {
-    GOPHER,
-    SKY,
-    WALL,
-} FILE_ID;
+    TEXTURE_GOPHER,
+    TEXTURE_SKY,
+    TEXTURE_WALL,
+} TEXTURE;
 
 
 // Forward Declaration
-void load_textures(void);
-void init_game (Game* game);
-void draw_title(Game* game);
-void draw_game(Game* game);
-void draw_game_over(Game* game);
+void loadTextures(void);
+void initGame(Game* game);
+void drawTitle(Game* game);
+void drawGame(Game* game);
+void drawGameOver(Game* game);
 
 // Global Variables
 const char* file_names[3] = {
@@ -100,7 +95,7 @@ const char* assets_path = "assets/";
 const char* suffix = ".png";
 
 
-void load_textures(void)
+void loadTextures(void)
 {
     char path[32];
     size_t len = sizeof(file_names) / sizeof(file_names[0]);
@@ -118,7 +113,7 @@ void load_textures(void)
     }
 }
 
-void init_game(Game* game)
+void initGame(Game* game)
 {
     game->gopher =
         (Gopher){
@@ -133,21 +128,21 @@ void init_game(Game* game)
     game->old_score = 0;
     game->new_score = 0;
     game->score_string = "Score: 0";
-    game->scene = Game_Title;
+    game->scene = SCENE_GAME_TITLE;
     game->walls = (DaWall){0};
 }
 
-void draw_title(Game* game)
+void drawTitle(Game* game)
 {
-    DrawTexture(textures[SKY], 0, 0, WHITE);
+    DrawTexture(textures[TEXTURE_SKY], 0, 0, WHITE);
     DrawText("Click!", (WINDOW_WIDTH / 2) - 40, WINDOW_HEIGHT / 2, 20, WHITE);
-    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[TEXTURE_GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        game->scene = Game_Play;
+        game->scene = SCENE_GAME_PLAY;
     }
 }
 
-void draw_game(Game* game)
+void drawGame(Game* game)
 {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->velocity = JUMP;
@@ -179,8 +174,8 @@ void draw_game(Game* game)
         game->old_score = game->new_score;
     }
 
-    DrawTexture(textures[SKY], 0, 0, WHITE);
-    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[TEXTURE_SKY], 0, 0, WHITE);
+    DrawTexture(textures[TEXTURE_GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
 
     for (size_t i = 0; i < game->walls.len; ++i) {
@@ -190,9 +185,9 @@ void draw_game(Game* game)
         float y = game->gopher.y;
 
         // 上の壁の描画
-        DrawTexture(textures[WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
+        DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
         // 下の壁の描画
-        DrawTexture(textures[WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
+        DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
 
         // gopherを表す四角形を作る
         int g_left = (int)x;
@@ -208,7 +203,7 @@ void draw_game(Game* game)
 
         // 上の壁との当たり判定
         if (g_left < w_right && w_left < g_right && g_top < w_bottom && w_top < g_bottom) {
-            game->scene = Game_Over;
+            game->scene = SCENE_GAME_OVER;
         }
 
         // 下の壁を表す四角形を作る
@@ -219,7 +214,7 @@ void draw_game(Game* game)
 
         // 下の壁との当たり判定
         if (g_left < w_right && w_left < g_right && g_top < w_bottom && w_top < g_bottom) {
-            game->scene = Game_Over;
+            game->scene = SCENE_GAME_OVER;
         }
     }
 
@@ -228,24 +223,24 @@ void draw_game(Game* game)
 
     // 上の壁との当たり判定
     if (game->gopher.y < 0) {
-        game->scene = Game_Over;
+        game->scene = SCENE_GAME_OVER;
     }
     // 地面との当たり判定
     if (360 - GOPHER_HEIGHT < game->gopher.y) {
-        game->scene = Game_Over;
+        game->scene = SCENE_GAME_OVER;
     }
 }
 
-void draw_game_over(Game* game)
+void drawGameOver(Game* game)
 {
-    DrawTexture(textures[SKY], 0, 0, WHITE);
-    DrawTexture(textures[GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
+    DrawTexture(textures[TEXTURE_SKY], 0, 0, WHITE);
+    DrawTexture(textures[TEXTURE_GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
 
     for (size_t i = 0; i < game->walls.len; ++i) {
         int wall_x = game->walls.items[i].wall_x;
         int hole_y = game->walls.items[i].hole_y;
-        DrawTexture(textures[WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
-        DrawTexture(textures[WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
+        DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
+        DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
     }
     DrawText("Game Over", (WINDOW_WIDTH / 2) - 60, (WINDOW_HEIGHT / 2) - 60, 20, WHITE);
 
@@ -253,9 +248,9 @@ void draw_game_over(Game* game)
     DrawText(game->score_string, (WINDOW_WIDTH / 2) - 60, (WINDOW_HEIGHT / 2) - 40, 20, WHITE);
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        game->scene = Game_Title;
+        game->scene = SCENE_GAME_TITLE;
         YacDynamicArrayClearAndFree(game->walls);
-        init_game(game);
+        initGame(game);
     }
 }
 
@@ -266,10 +261,10 @@ int main(void)
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FPS);
 
-    load_textures();
+    loadTextures();
 
     Game game;
-    init_game(&game);
+    initGame(&game);
 
     RenderTexture2D render_texture = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -277,14 +272,14 @@ int main(void)
         BeginTextureMode(render_texture);
         {
             switch (game.scene) {
-                case Game_Title:
-                    draw_title(&game);
+                case SCENE_GAME_TITLE:
+                    drawTitle(&game);
                     break;
-                case Game_Play:
-                    draw_game(&game);
+                case SCENE_GAME_PLAY:
+                    drawGame(&game);
                     break;
-                case Game_Over:
-                    draw_game_over(&game);
+                case SCENE_GAME_OVER:
+                    drawGameOver(&game);
                     break;
                 default:
                     break;
