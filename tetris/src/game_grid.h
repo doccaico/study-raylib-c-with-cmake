@@ -3,9 +3,10 @@
 
 #include "raylib.h"
 
-#include "structs.h"
 #include "constants.h"
-#include "containers/vec.h"
+#include "mino.h"
+#include "structs.h"
+#include "yac_types.h"
 
 
 typedef struct {
@@ -21,9 +22,10 @@ typedef struct {
 
 typedef struct {
     // vec_mino grid; // origin is top-left
-    vec_mm grid; // origin is top-left
-    vec_piece_type upcoming_pieces;
-    vec_piece_type bag;
+    // vec_mm grid; // origin is top-left
+    DaDaMino grid; // origin is top-left
+    DaPieceType upcoming_pieces;
+    DaPieceType bag;
     PieceType* held_piece;
     PieceType current_piece;
     unsigned int next_update;
@@ -39,11 +41,10 @@ typedef struct {
 } GameGrid;
 
 
-void input_state_init(InputState* input_state);
-void game_grid_init(GameGrid* gg);
-bool game_grid_update(GameGrid* gg);
-PieceType game_grid_pick_new_piece(GameGrid* gg);
-bool game_grid_move_dynamic_minos(int right, int down);
+void GameGridInit(GameGrid* gg);
+bool GameGridUpdate(GameGrid* gg);
+PieceType GameGridPickNewPiece(GameGrid* gg);
+bool GameGridMoveDynamicMinos(int right, int down);
 
 
 #endif // GAME_GRID_H_

@@ -1,111 +1,109 @@
-#include "shape_manager.h"
-// #include "structs.h"
-// #include "constants.h"
 #include "mino.h"
+#include "shape_manager.h"
+#include "yac_types.h"
 
-// #include "containers/vec.h"
+#include "yac_dynamic_array.h"
 
-// box_mino mino_init(Color color, bool is_dynamic);
 
-// box_mino mino_init(Color, bool);
-// Mino* mino_init(Color, bool);
+static PieceType PieceTypeFromInt(int n);
 
-vec_mino shape_manager_get_piece(PieceType type, GridPos *pivot)
+
+DaMino ShapeManagerGetPiece(PieceType type, GridPos *pivot)
 {
-    vec_mino piece = vec_mino_with_capacity(8);
+    DaMino pieces = {0};
 
     switch (type) {
         case I:
             *pivot = (GridPos){0, 1};
-            vec_mino_push(&piece, mino_init(I_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(I_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(I_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(I_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(I_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(I_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(I_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(I_PIECE_COLOR, true));
 
             break;
         case J:
             *pivot = (GridPos){1, 1};
-            vec_mino_push(&piece, mino_init(J_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(J_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(J_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(J_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(J_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(J_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(J_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(J_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         case L:
             *pivot = (GridPos){1, 1};
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(L_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(L_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(L_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(L_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(L_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(L_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(L_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(L_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         case O:
             *pivot = (GridPos){0, 0};
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(O_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(O_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(O_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(O_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(O_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(O_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(O_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(O_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         case T:
             *pivot = (GridPos){1, 1};
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(T_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(T_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(T_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(T_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(T_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(T_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(T_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(T_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         case S:
             *pivot = (GridPos){1, 1};
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(S_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(S_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(S_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(S_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(S_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(S_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(S_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(S_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         case Z:
             *pivot = (GridPos){1, 1};
-            vec_mino_push(&piece, mino_init(Z_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(Z_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, NULL);
-            vec_mino_push(&piece, mino_init(Z_PIECE_COLOR, true));
-            vec_mino_push(&piece, mino_init(Z_PIECE_COLOR, true));
-            vec_mino_push(&piece, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(Z_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(Z_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, NULL);
+            YacDynamicArrayAppend(&pieces, MinoInit(Z_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, MinoInit(Z_PIECE_COLOR, true));
+            YacDynamicArrayAppend(&pieces, NULL);
             break;
         default:
             break;
     }
-    return piece;
+    return pieces;
 }
 
-vec_piece_type shape_manager_get_bag(void)
+DaPieceType ShapeManagerGetBag(void)
 {
-    vec_piece_type bag = vec_piece_type_with_capacity(7);
+    DaPieceType bag = {0};
 
-    for (int i = 0; i < 7; ++i) {
-        vec_piece_type_push(&bag, piece_type_from_int(i));
+    for (size_t i = 0; i < 7; ++i) {
+        YacDynamicArrayAppend(&bag, PieceTypeFromInt((int)i));
     }
     return bag;
 }
 
-PieceType piece_type_from_int(int n)
+static PieceType PieceTypeFromInt(int n)
 {
     PieceType ret;
 
@@ -132,7 +130,7 @@ PieceType piece_type_from_int(int n)
             ret = 6;
             break;
         default:
-            assert(0 && "reach unreachable (piece_type_from_int)");
+            assert(0 && "reach unreachable (PieceTypeFromInt)");
             ret = 0;
             break;
     }

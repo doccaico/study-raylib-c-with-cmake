@@ -15,13 +15,13 @@ int main(void)
     SetTargetFPS(FPS);
 
     GameGrid grid;
-    game_grid_init(&grid);
+    GameGridInit(&grid);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (!game_grid_update(&grid)) {
+        if (!GameGridUpdate(&grid)) {
             break; // game over
         }
 

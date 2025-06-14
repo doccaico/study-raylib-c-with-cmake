@@ -9,12 +9,12 @@
 #define WINDOW_TITLE "lifegame"
 #endif
 
-#define CELL_SIZE (2)
-#define INITIAL_CELL_COUNT (80)
-#define FPS (30)
+#define CELL_SIZE 2
+#define INITIAL_CELL_COUNT 80
+#define FPS 30
 
-#define SCREEN_WIDTH (480)
-#define SCREEN_HEIGHT (640)
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 640
 #define COL_SIZE (SCREEN_WIDTH / CELL_SIZE + 2)
 #define ROW_SIZE (SCREEN_HEIGHT / CELL_SIZE + 2)
 

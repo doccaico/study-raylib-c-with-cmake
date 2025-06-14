@@ -3,7 +3,7 @@
 // #include "game_grid.h"
 #include "mino.h"
 #include "utils.h"
-#include "containers/vec.h"
+// #include "containers/vec.h"
 
 
 // box_mino mino_init(Color color, bool is_dynamic)
@@ -23,7 +23,7 @@
 //     // return bm;
 // }
 
-Mino* mino_init(Color color, bool is_dynamic)
+Mino* MinoInit(Color color, bool is_dynamic)
 {
 	Mino* mino = malloc_or_die(sizeof(Mino));
     mino->color = color;
