@@ -14,17 +14,18 @@ int main(void)
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FPS);
 
-    GameGrid grid;
-    GameGridInit(&grid);
+    GameGrid gg;
+    GameGridInit(&gg);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (!GameGridUpdate(&grid)) {
+        if (!GameGridUpdate(&gg)) {
             break; // game over
         }
 
+        GameGridDraw(&gg);
 
         EndDrawing();
     }

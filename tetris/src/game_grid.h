@@ -1,6 +1,8 @@
 #ifndef GAME_GRID_H_
 #define GAME_GRID_H_
 
+#include <stdbool.h>
+
 #include "raylib.h"
 
 #include "constants.h"
@@ -44,7 +46,12 @@ typedef struct {
 void GameGridInit(GameGrid* gg);
 bool GameGridUpdate(GameGrid* gg);
 PieceType GameGridPickNewPiece(GameGrid* gg);
-bool GameGridMoveDynamicMinos(int right, int down);
+bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down);
+bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise);
+void GameGridHoldPiece(GameGrid* gg);
+bool GameGridDeleteDynamicMinos(GameGrid* gg);
+bool GameGridSpawnNewTetromino(GameGrid* gg);
+void GameGridDraw(GameGrid* gg);
 
 
 #endif // GAME_GRID_H_

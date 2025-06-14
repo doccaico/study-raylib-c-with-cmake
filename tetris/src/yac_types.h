@@ -22,4 +22,10 @@ typedef struct {
     size_t capacity;
 } DaPieceType;
 
+typedef struct {
+    MinoPos* items;
+    size_t len;
+    size_t capacity;
+} DaMinoPos;
+
 #endif // YAC_TYPES_H_

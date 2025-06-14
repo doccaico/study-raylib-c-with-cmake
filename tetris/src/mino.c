@@ -23,11 +23,11 @@
 //     // return bm;
 // }
 
-Mino* MinoInit(Color color, bool is_dynamic)
+Mino* MinoInit(Color color, bool isDynamic)
 {
 	Mino* mino = malloc_or_die(sizeof(Mino));
     mino->color = color;
-    mino->is_dynamic = is_dynamic;
+    mino->isDynamic = isDynamic;
 
     // box_mino bm = box_mino_init();
 

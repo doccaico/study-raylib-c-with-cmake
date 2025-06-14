@@ -1,8 +1,9 @@
 #ifndef MINO_H_
 #define MINO_H_
 
-#include "../../_vendor/raylib/include/raylib.h"
-// #include "raylib.h"
+// #include "../../_vendor/raylib/include/raylib.h"
+#include "raylib.h"
+#include "structs.h"
 
 // #include "containers/vec.h"
 
@@ -11,7 +12,7 @@
 
 typedef struct {
     Color color;
-    bool is_dynamic;
+    bool isDynamic;
 } Mino;
 
 // struct Mino_t{
@@ -20,10 +21,13 @@ typedef struct {
 // };
 // typedef struct Mino_t Mino;
 
+typedef struct {
+    Mino* mino;
+    GridPos pos;
+} MinoPos;
 
 // box_mino mino_init(Color color, bool is_dynamic);
-Mino* MinoInit(Color color, bool is_dynamic);
-
+Mino* MinoInit(Color color, bool isDynamic);
 // struct Mino_t;
 //
 
