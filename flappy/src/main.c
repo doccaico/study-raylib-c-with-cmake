@@ -1,9 +1,10 @@
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "raylib.h"
 
-#include "yacc.h"
+#include "yac_dynamic_array.h"
 
 #ifdef _DEBUG
 #define WINDOW_TITLE "flappy (debug)"
@@ -57,7 +58,7 @@ typedef struct {
 } Wall;
 
 typedef struct {
-    Wall *items;
+    Wall* items;
     size_t len;
     size_t capacity;
 } DaWall;
@@ -158,7 +159,7 @@ void draw_game(Game* game)
     if (game->frames % INTERVAL == 0) {
         int min = 0, max = HOLE_Y_MAX - 1;
         int rand_num = rand() % (max - min + 1) + min;
-        da_append(&game->walls, ((Wall){.wall_x = WALL_START_X, .hole_y = rand_num}));
+        YacDynamicArrayAppend(&game->walls, ((Wall){.wall_x = WALL_START_X, .hole_y = rand_num}));
     }
 
     // wallを左へ移動
@@ -253,7 +254,7 @@ void draw_game_over(Game* game)
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->scene = Game_Title;
-        da_clear_and_free(game->walls);
+        YacDynamicArrayClearAndFree(game->walls);
         init_game(game);
     }
 }
@@ -310,8 +311,8 @@ int main(void)
     }
 
     UnloadRenderTexture(render_texture);
-    if (!da_is_null(game.walls)) {
-        da_clear_and_free(game.walls);
+    if (!YacDynamicArrayIsNull(game.walls)) {
+        YacDynamicArrayClearAndFree(game.walls);
     }
 
     CloseWindow();
