@@ -13,10 +13,10 @@
 #define INITIAL_CELL_COUNT (80)
 #define FPS (30)
 
-#define WINDOW_WIDTH (480)
-#define WINDOW_HEIGHT (640)
-#define COL_SIZE (WINDOW_WIDTH / CELL_SIZE + 2)
-#define ROW_SIZE (WINDOW_HEIGHT / CELL_SIZE + 2)
+#define SCREEN_WIDTH (480)
+#define SCREEN_HEIGHT (640)
+#define COL_SIZE (SCREEN_WIDTH / CELL_SIZE + 2)
+#define ROW_SIZE (SCREEN_HEIGHT / CELL_SIZE + 2)
 
 int grid[ROW_SIZE][COL_SIZE];
 int neighbors[ROW_SIZE][COL_SIZE];
@@ -147,7 +147,7 @@ int main(void)
     initializeGrid();
     randomize();
 
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FPS);
 
     while (!WindowShouldClose()) {

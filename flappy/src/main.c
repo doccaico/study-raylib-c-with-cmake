@@ -12,8 +12,8 @@
 #define WINDOW_TITLE "flappy"
 #endif
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 360
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 360
 #define FPS 60
 
 #define JUMP -4.0
@@ -135,7 +135,7 @@ void initGame(Game* game)
 void drawTitle(Game* game)
 {
     DrawTexture(textures[TEXTURE_SKY], 0, 0, WHITE);
-    DrawText("Click!", (WINDOW_WIDTH / 2) - 40, WINDOW_HEIGHT / 2, 20, WHITE);
+    DrawText("Click!", (SCREEN_WIDTH / 2) - 40, SCREEN_HEIGHT / 2, 20, WHITE);
     DrawTexture(textures[TEXTURE_GOPHER], (int)game->gopher.x, (int)game->gopher.y, WHITE);
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->scene = SCENE_GAME_PLAY;
@@ -242,10 +242,10 @@ void drawGameOver(Game* game)
         DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y - WALL_HEIGHT, WHITE);
         DrawTexture(textures[TEXTURE_WALL], wall_x, hole_y + HOLE_HEIGHT, WHITE);
     }
-    DrawText("Game Over", (WINDOW_WIDTH / 2) - 60, (WINDOW_HEIGHT / 2) - 60, 20, WHITE);
+    DrawText("Game Over", (SCREEN_WIDTH / 2) - 60, (SCREEN_HEIGHT / 2) - 60, 20, WHITE);
 
     game->score_string = TextFormat("Score: %d", game->new_score);
-    DrawText(game->score_string, (WINDOW_WIDTH / 2) - 60, (WINDOW_HEIGHT / 2) - 40, 20, WHITE);
+    DrawText(game->score_string, (SCREEN_WIDTH / 2) - 60, (SCREEN_HEIGHT / 2) - 40, 20, WHITE);
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         game->scene = SCENE_GAME_TITLE;
@@ -258,7 +258,7 @@ int main(void)
 {
     srand((unsigned int)time(NULL));
 
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FPS);
 
     loadTextures();
@@ -266,7 +266,7 @@ int main(void)
     Game game;
     initGame(&game);
 
-    RenderTexture2D render_texture = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+    RenderTexture2D render_texture = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     while (!WindowShouldClose()) {
         BeginTextureMode(render_texture);
