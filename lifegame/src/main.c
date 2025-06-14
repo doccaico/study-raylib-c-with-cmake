@@ -23,13 +23,13 @@ int neighbors[ROW_SIZE][COL_SIZE];
 Color cell_color;
 Color bg_color;
 
-void initialize_color(void)
+void initializeColor(void)
 {
     cell_color = BLACK;
     bg_color = RAYWHITE;
 }
 
-void initialize_grid(void)
+void initializeGrid(void)
 {
     for (int i = 0; i < COL_SIZE; ++i) {
         // top
@@ -52,14 +52,14 @@ void initialize_grid(void)
     }
 }
 
-void swap(int *a, int *b)
+void swap(int* a, int* b)
 {
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void shuffle(int *array, int n)
+void shuffle(int* array, int n)
 {
     for (int i = n - 1; i > 0; --i) {
         int j = rand() % (i + 1);
@@ -91,7 +91,7 @@ void draw(void)
     }
 }
 
-void next_generation(void)
+void nextGeneration(void)
 {
     for (int i = 1; i < ROW_SIZE - 1; ++i) {
         for (int j = 1; j < COL_SIZE - 1; ++j) {
@@ -123,28 +123,28 @@ void next_generation(void)
     }
 }
 
-//   rand_range(0, 5) == 0..=5
-unsigned char rand_range(int min, int max)
+//   randRange(0, 5) == 0..=5
+unsigned char randRange(int min, int max)
 {
     return (unsigned char)(rand() % (max + 1 - min));
 }
 
-void change_bg_color(void)
+void changeBgColor(void)
 {
-    bg_color = (Color){rand_range(0, 255), rand_range(0, 255), rand_range(0, 255), 255};
+    bg_color = (Color){randRange(0, 255), randRange(0, 255), randRange(0, 255), 255};
 }
 
-void change_cell_color(void)
+void changeCellColor(void)
 {
-    cell_color = (Color){rand_range(0, 255), rand_range(0, 255), rand_range(0, 255), 255};
+    cell_color = (Color){randRange(0, 255), randRange(0, 255), randRange(0, 255), 255};
 }
 
 int main(void)
 {
     srand((unsigned int)time(NULL));
 
-    initialize_color();
-    initialize_grid();
+    initializeColor();
+    initializeGrid();
     randomize();
 
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
@@ -152,18 +152,18 @@ int main(void)
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_R)) {
-            initialize_grid();
+            initializeGrid();
             randomize();
         } else if (IsKeyPressed(KEY_B)) {
-            change_bg_color();
+            changeBgColor();
         } else if (IsKeyPressed(KEY_C)) {
-            change_cell_color();
+            changeCellColor();
         }
 
         BeginDrawing();
         ClearBackground(bg_color);
         draw();
-        next_generation();
+        nextGeneration();
         EndDrawing();
     }
 
