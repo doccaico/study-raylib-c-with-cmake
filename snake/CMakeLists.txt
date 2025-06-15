@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(tetris C)
+project(snake C)
 
 file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c)
