@@ -34,5 +34,5 @@ $ build\release\lifegame\lifegame.exe
 ```
 
 ### Using Library
-- [STC - Smart Template Containers](https://github.com/stclib/STC)
 - [raylib](https://github.com/raysan5/raylib)
+- [yac](https://github.com/doccaico/yac)
