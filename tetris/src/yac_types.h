@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "mino.h"
 
+
 typedef struct {
     Mino** items;
     size_t len;
@@ -27,5 +28,6 @@ typedef struct {
     size_t len;
     size_t capacity;
 } DaMinoPos;
+
 
 #endif // YAC_TYPES_H_

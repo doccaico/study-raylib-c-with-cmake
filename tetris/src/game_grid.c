@@ -2,37 +2,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "constants.h"
 #include "game_grid.h"
+
+#include "constants.h"
 #include "mino.h"
 #include "shape_manager.h"
 #include "utils.h"
 
+#include "raylib.h"
 #include "yac_dynamic_array.h"
-
 #define YAC_STRING_VIEW_IMPLEMENTATION
 #include "yac_string_view.h"
-
 #define YAC_STRING_BUILDER_IMPLEMENTATION
 #include "yac_string_builder.h"
-
 #include "yac_types.h"
-
 
 static void InputStateInit(InputState* input_state);
 static GridPos GameGridGetRotationAroundPivot(GameGrid* gg, GridPos pos, bool clockwise);
+static PieceType GameGridPickNewPiece(GameGrid* gg);
+static bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down);
+static bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise);
+static void GameGridHoldPiece(GameGrid* gg);
+static bool GameGridDeleteDynamicMinos(GameGrid* gg);
+static bool GameGridSpawnNewTetromino(GameGrid* gg);
 
 
 void GameGridInit(GameGrid* gg)
 {
-
     gg->grid = (DaDaMino){0};
 
-    for (size_t i = 0; i < CELLS_X; ++i) {
+    for (size_t i = 0; i < CELLS_Y; ++i) {
         DaMino da_mino = {0};
         YacDynamicArrayAppend(&gg->grid, da_mino);
-        for (size_t j = 0; j < CELLS_Y; ++j) {
-            YacDynamicArrayAppend(&gg->grid.items[i], NULL);
+    }
+
+    for (size_t i = 0; i < CELLS_Y; ++i) {
+        for (size_t j = 0; j < CELLS_X; ++j) {
+        YacDynamicArrayAppend(&gg->grid.items[i], NULL);
         }
     }
 
@@ -53,6 +59,26 @@ void GameGridInit(GameGrid* gg)
     gg->score = 0;
     gg->lines_cleared = 0;
     gg->speed = 1.0f;
+}
+
+void GameGridDeinit(GameGrid* gg)
+{
+    for (size_t i = 0; i < gg->grid.len; ++i) {
+        for (size_t j = 0; j < gg->grid.items[i].len; ++j) {
+            if (gg->grid.items[i].items[j] != NULL) {
+                free(gg->grid.items[i].items[j]);
+            }
+        }
+        YacDynamicArrayClearAndFree(gg->grid.items[i]);
+    }
+
+    YacDynamicArrayClearAndFree(gg->grid);
+    YacDynamicArrayClearAndFree(gg->upcoming_pieces);
+    YacDynamicArrayClearAndFree(gg->bag);
+
+    if (gg->held_piece != NULL) {
+        free(gg->held_piece);
+    }
 }
 
 bool GameGridUpdate(GameGrid* gg)
@@ -155,7 +181,7 @@ bool GameGridUpdate(GameGrid* gg)
         if (gg->last_movement_update < PIECE_STATIFICATION_DELAY && !midAir)
             return true;
 
-        // make minos static
+        // Make minos static
         if (!GameGridMoveDynamicMinos(gg, 0, 1)) {
             for (size_t i = 0; i < gg->grid.len; ++i) {
                 for (size_t j = 0; j < gg->grid.items[i].len; ++j) {
@@ -181,8 +207,6 @@ bool GameGridUpdate(GameGrid* gg)
                 if (rowFull) {
                     clearedRows++;
                     for (size_t j = 0; j < gg->grid.items[i].len; ++j) {
-                        // delete grid[i][j];
-                        // YacDynamicArrayRemove(&gg->grid.items[i], j);
                         free(gg->grid.items[i].items[j]);
                         gg->grid.items[i].items[j] = NULL;
                     }
@@ -218,7 +242,7 @@ bool GameGridUpdate(GameGrid* gg)
                 }
             }
 
-            // then, spawn in a new piece
+            // Then, spawn in a new piece
             if (!GameGridSpawnNewTetromino(gg))
                 return false;
         }
@@ -227,30 +251,141 @@ bool GameGridUpdate(GameGrid* gg)
     return true;
 }
 
-PieceType GameGridPickNewPiece(GameGrid* gg)
+void GameGridDraw(GameGrid* gg)
 {
-    // if (vec_piece_type_is_empty(&gg->bag)) {
+
+    // Draw grid
+    for (int i = 0; i < CELLS_X; ++i) {
+        for (int j = 0; j < CELLS_Y; ++j) {
+            int x = i * CELL_SIZE;
+            int y = j * CELL_SIZE;
+            DrawRectangleLines(x, y, CELL_SIZE, CELL_SIZE, GRID_COLOR);
+        }
+    }
+
+    // Draw minos
+    for (size_t i = 0; i < gg->grid.len; ++i)
+        for (size_t j = 0; j < gg->grid.items[i].len; ++j)
+            if (gg->grid.items[i].items[j] != NULL)
+                DrawRectangle(
+                        (int)j * CELL_SIZE, (int)i * CELL_SIZE,
+                        CELL_SIZE, CELL_SIZE,
+                        gg->grid.items[i].items[j]->color);
+
+    // Draw progress
+    int leftOffset = (int)gg->grid.items[0].len * CELL_SIZE + 5;
+    {
+        YacStringBuilder sb = YacStringBuilderCreate(0);
+        YacStringBuilderAppendFormat(&sb, "LVL %u", gg->level);
+        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 20, 15, WHITE);
+        YacStringBuilderClearAndFree(sb);
+    }
+    {
+        YacStringBuilder sb = YacStringBuilderCreate(0);
+        YacStringBuilderAppendFormat(&sb, "SCR %u", gg->score);
+        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 35, 15, WHITE);
+        YacStringBuilderClearAndFree(sb);
+    }
+    {
+        YacStringBuilder sb = YacStringBuilderCreate(0);
+        YacStringBuilderAppendFormat(&sb, "LNS %u", gg->lines_cleared);
+        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 50, 15, WHITE);
+        YacStringBuilderClearAndFree(sb);
+    }
+
+    // Draw upcoming pieces
+    int margin = 10;
+    int pieceSize = 4 * CELL_SIZE;
+    for (size_t i = 0; i < PIECE_LOOKAHEAD; ++i) {
+        GridPos pos;
+        DaMino pieces = ShapeManagerGetPiece(gg->upcoming_pieces.items[i], &pos);
+        for (size_t j = 0; j < pieces.len; ++j) {
+            if (pieces.items[j] == NULL)
+                continue;
+            int x = (int)gg->grid.items[0].len * CELL_SIZE + margin + (j % 4) * CELL_SIZE;
+            int y = (int)(margin + (i * pieceSize) + (j / 4) * CELL_SIZE + (pieceSize * 2));
+            DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, pieces.items[j]->color);
+        }
+        for (size_t j = 0; j < pieces.len; j++)
+            if (pieces.items[j] != NULL) {
+                free(pieces.items[j]);
+            }
+
+        YacDynamicArrayClearAndFree(pieces);
+    }
+
+    // Draw held piece
+    DrawRectangle((int)gg->grid.items[0].len * CELL_SIZE + margin, pieceSize, pieceSize, pieceSize, DARKGRAY);
+    if (gg->held_piece != NULL) {
+        GridPos pos;
+        DaMino pieces = ShapeManagerGetPiece(*gg->held_piece, &pos);
+        for (size_t j = 0; j < pieces.len; ++j) {
+            if (pieces.items[j] == NULL)
+                continue;
+            int x = (int)gg->grid.items[0].len * CELL_SIZE + margin + (j % 4) * CELL_SIZE;
+            int y = (int)(margin + (j / 4) * CELL_SIZE + pieceSize);
+            DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, pieces.items[j]->color);
+        }
+        for (size_t j = 0; j < pieces.len; ++j) {
+            if (pieces.items[j] != NULL) {
+                free(pieces.items[j]);
+            }
+        }
+        YacDynamicArrayClearAndFree(pieces);
+    }
+}
+
+static void InputStateInit(InputState* input_state)
+{
+    input_state->right_pressed_last_frame = false; // Move right
+    input_state->left_pressed_last_frame = false; // Move left
+    input_state->down_pressed_last_frame = false; // Drop faster
+    input_state->up_pressed_last_frame = false; // Rotate
+    input_state->space_pressed_last_frame = false; // Hard drop
+    input_state->a_pressed_last_frame = false; // Rotate left
+    input_state->d_pressed_last_frame = false; // Rotate right
+    input_state->shift_pressed_last_frame = false; // Rotate right
+}
+
+static GridPos GameGridGetRotationAroundPivot(GameGrid* gg, GridPos pos, bool clockwise)
+{
+    int relX = pos.x - gg->pivot.x;
+    int relY = pos.y - gg->pivot.y;
+
+    int newRelX, newRelY;
+
+    if (clockwise) {
+        newRelX = relY;
+        newRelY = -relX;
+    } else {
+        newRelX = -relY;
+        newRelY = relX;
+    }
+
+    GridPos newPos;
+    newPos.x = newRelX + gg->pivot.x;
+    newPos.y = newRelY + gg->pivot.y;
+
+    return newPos;
+}
+
+static PieceType GameGridPickNewPiece(GameGrid* gg)
+{
     if (gg->bag.len == 0) {
         gg->bag = ShapeManagerGetBag();
     }
-    // int piece_index = rand() % vec_piece_type_size(&gg->bag);
     int piece_index = rand() % gg->bag.len;
-    // PieceType piece = gg->bag.data[piece_index];
     PieceType piece = gg->bag.items[piece_index];
-    // vec_piece_type_iter iter = vec_piece_type_begin(&gg->bag);
-    // vec_piece_type_erase_at(&gg->bag, vec_piece_type_advance(iter, piece_index));
     YacDynamicArrayRemove(&gg->bag, piece_index);
-
     return piece;
 }
 
-// Returns whether anything changed
-// input should be (-1, 1) to move it left and down
-bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down)
+// Returns whether anything changed input should be (-1, 1) to move it left and down
+static bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down)
 {
     bool changeOccurred = false;
 
-    // 1. move horizontally
+    // 1. Move horizontally
     if (right != 0) {
         // Check if minos can move
         bool dynamicMinosMovable = true;
@@ -301,7 +436,7 @@ bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down)
         }
     }
 
-    // 2. move vertically
+    // 2. Move vertically
     if (down != 0) {
         // Check if minos can move
         bool dynamicMinosMovable = true;
@@ -357,7 +492,8 @@ bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down)
     return changeOccurred;
 }
 
-bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise) {
+static bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise)
+{
     DaMinoPos dynamicMinos = {0};
     DaMinoPos newDynamicMinos = {0};
 
@@ -388,13 +524,11 @@ bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise) {
 
     // 3. Rotate minos
     for (size_t i = 0; i < dynamicMinos.len; ++i) {
-        // grid[dynamicMinos[i].second.y][dynamicMinos[i].second.x] = NULL;
         int j = dynamicMinos.items[i].pos.y;
         int k = dynamicMinos.items[i].pos.x;
         gg->grid.items[j].items[k] = NULL;
     }
     for (size_t i = 0; i < newDynamicMinos.len; ++i) {
-        // grid[newDynamicMinos[i].second.y][newDynamicMinos[i].second.x] = newDynamicMinos[i].first;
         int j = newDynamicMinos.items[i].pos.y;
         int k = newDynamicMinos.items[i].pos.x;
         gg->grid.items[j].items[k] = newDynamicMinos.items[i].mino;
@@ -411,19 +545,23 @@ bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise) {
     return ret;
 }
 
-void GameGridHoldPiece(GameGrid* gg)
+static void GameGridHoldPiece(GameGrid* gg)
 {
     if (gg->held_piece == NULL) {
         PieceType* pt = malloc_or_die(sizeof(PieceType));
         *pt = gg->current_piece;
         gg->held_piece = pt;
+
         GameGridDeleteDynamicMinos(gg);
         GameGridSpawnNewTetromino(gg);
     } else {
         PieceType nextPiece = *gg->held_piece;
 
         free(gg->held_piece);
-        gg->held_piece = malloc_or_die(sizeof(PieceType));
+
+        PieceType* pt = malloc_or_die(sizeof(PieceType));
+        *pt = gg->current_piece;
+        gg->held_piece = pt;
 
         GameGridDeleteDynamicMinos(gg);
         YacDynamicArrayInsert(&gg->upcoming_pieces, 0, nextPiece);
@@ -431,19 +569,19 @@ void GameGridHoldPiece(GameGrid* gg)
     }
 }
 
-bool GameGridDeleteDynamicMinos(GameGrid* gg)
+static bool GameGridDeleteDynamicMinos(GameGrid* gg)
 {
     bool changeOccurred = false;
     for (size_t j = 0; j < gg->grid.len; ++j) {
         for (size_t i = 0; i < gg->grid.items[j].len; ++i) {
-            if (gg->grid.items[j].items[i] == NULL)
+            if (gg->grid.items[j].items[i] == NULL) {
                 continue;
+            }
             Mino *dm = gg->grid.items[j].items[i];
-            if (dm == NULL || !dm->isDynamic)
+            if (dm == NULL || !dm->isDynamic) {
                 continue;
-            // delete grid[j][i];
-            // YacDynamicArrayRemove(&gg->grid.items[j], i);
-            free(&gg->grid.items[j].items[i]);
+            }
+            free(gg->grid.items[j].items[i]);
             gg->grid.items[j].items[i] = NULL;
             changeOccurred = true;
         }
@@ -451,19 +589,16 @@ bool GameGridDeleteDynamicMinos(GameGrid* gg)
     return changeOccurred;
 }
 
-bool GameGridSpawnNewTetromino(GameGrid* gg)
+static bool GameGridSpawnNewTetromino(GameGrid* gg)
 {
     PieceType type = gg->upcoming_pieces.items[0];
-    // upcomingPieces.erase(upcomingPieces.begin());
     YacDynamicArrayRemove(&gg->upcoming_pieces, 0);
     if (gg->upcoming_pieces.len < PIECE_LOOKAHEAD) {
         for (size_t i = gg->upcoming_pieces.len; i < PIECE_LOOKAHEAD; ++i)
-            // upcomingPieces.push_back(pickNewPiece());
             YacDynamicArrayAppend(&gg->upcoming_pieces, GameGridPickNewPiece(gg));
     }
     gg->current_piece = type;
 
-    // std::vector<Mino*> piece = ShapeManager::getPiece(type, pivot);
     DaMino pieces = ShapeManagerGetPiece(type, &gg->pivot);
     int spawningOffset = (CELLS_X - 4) / 2;
 
@@ -472,7 +607,9 @@ bool GameGridSpawnNewTetromino(GameGrid* gg)
         if (pieces.items[i] == NULL)
             continue;
         if (gg->grid.items[i / 4].items[(i % 4) + spawningOffset] != NULL) {
+            puts(" ---------------- ");
             puts(" -- Game Over! -- ");
+            puts(" ---------------- ");
             YacDynamicArrayClearAndFree(pieces);
             return false;
         }
@@ -480,127 +617,7 @@ bool GameGridSpawnNewTetromino(GameGrid* gg)
     }
 
     YacDynamicArrayClearAndFree(pieces);
+
     return true;
-}
-
-void GameGridDraw(GameGrid* gg)
-{
-
-    // draw grid
-    for (int i = 0; i < CELLS_X; ++i) {
-        for (int j = 0; j < CELLS_Y; ++j) {
-            int x = i * CELL_SIZE;
-            int y = j * CELL_SIZE;
-            DrawRectangleLines(x, y, CELL_SIZE, CELL_SIZE, GRID_COLOR);
-        }
-    }
-
-    // draw minos
-    for (size_t i = 0; i < gg->grid.len; ++i)
-        for (size_t j = 0; j < gg->grid.items[i].len; ++j)
-            if (gg->grid.items[i].items[j] != NULL)
-                DrawRectangle(
-                        (int)j * CELL_SIZE, (int)i * CELL_SIZE,
-                        CELL_SIZE, CELL_SIZE,
-                        gg->grid.items[i].items[j]->color);
-
-    // draw progress
-    int leftOffset = (int)gg->grid.items[0].len * CELL_SIZE + 5;
-    {
-        YacStringBuilder sb = YacStringBuilderCreate(0);
-        YacStringBuilderAppendFormat(&sb, "LVL %u", gg->level);
-        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 20, 15, WHITE);
-        YacStringBuilderClearAndFree(sb);
-    }
-    {
-        YacStringBuilder sb = YacStringBuilderCreate(0);
-        YacStringBuilderAppendFormat(&sb, "SCR %u", gg->score);
-        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 35, 15, WHITE);
-        YacStringBuilderClearAndFree(sb);
-    }
-    {
-        YacStringBuilder sb = YacStringBuilderCreate(0);
-        YacStringBuilderAppendFormat(&sb, "LNS %u", gg->score);
-        DrawText(YacStringBuilderGetCstr(&sb), leftOffset, 50, 15, WHITE);
-        YacStringBuilderClearAndFree(sb);
-    }
-
-    // draw upcoming pieces
-    int margin = 10;
-    int pieceSize = 4 * CELL_SIZE;
-    for (size_t i = 0; i < PIECE_LOOKAHEAD; ++i) {
-        GridPos pos;
-        DaMino pieces = ShapeManagerGetPiece(gg->upcoming_pieces.items[i], &pos);
-        for (size_t j = 0; j < pieces.len; ++j) {
-            if (pieces.items[j] == NULL)
-                continue;
-            int x = (int)gg->grid.items[0].len * CELL_SIZE + margin + (j % 4) * CELL_SIZE;
-            int y = (int)(margin + (i * pieceSize) + (j / 4) * CELL_SIZE + (pieceSize * 2));
-            DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, pieces.items[j]->color);
-        }
-        for (size_t j = 0; j < pieces.len; j++)
-            if (pieces.items[j] != NULL) {
-                // delete pieces[j];
-                // YacDynamicArrayRemove(&pieces, i);
-                free(pieces.items[j]);
-            }
-
-        YacDynamicArrayClearAndFree(pieces);
-    }
-
-    // // draw held piece
-    DrawRectangle((int)gg->grid.items[0].len * CELL_SIZE + margin, pieceSize, pieceSize, pieceSize, DARKGRAY);
-    if (gg->held_piece != NULL) {
-        GridPos pos;
-        // std::vector<Mino*> piece = ShapeManager::getPiece(*heldPiece, pos);
-        DaMino pieces = ShapeManagerGetPiece(*gg->held_piece, &pos);
-        for (size_t j = 0; j < pieces.len; ++j) {
-            if (pieces.items[j] == NULL)
-                continue;
-            int x = (int)gg->grid.items[0].len * CELL_SIZE + margin + (j % 4) * CELL_SIZE;
-            int y = (int)(margin + (j / 4) * CELL_SIZE + pieceSize);
-            DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, pieces.items[j]->color);
-        }
-        for (size_t j = 0; j < pieces.len; ++j)
-            if (pieces.items[j] != NULL)
-                // delete piece[j];
-                free(pieces.items[j]);
-
-        YacDynamicArrayClearAndFree(pieces);
-    }
-}
-
-static void InputStateInit(InputState* input_state)
-{
-    input_state->right_pressed_last_frame = false; // move right
-    input_state->left_pressed_last_frame = false; // move left
-    input_state->down_pressed_last_frame = false; // drop faster
-    input_state->up_pressed_last_frame = false; // rotate
-    input_state->space_pressed_last_frame = false; // hard drop
-    input_state->a_pressed_last_frame = false; // rotate left
-    input_state->d_pressed_last_frame = false; // rotate right
-    input_state->shift_pressed_last_frame = false; // rotate right
-}
-
-static GridPos GameGridGetRotationAroundPivot(GameGrid* gg, GridPos pos, bool clockwise)
-{
-    int relX = pos.x - gg->pivot.x;
-    int relY = pos.y - gg->pivot.y;
-
-    int newRelX, newRelY;
-
-    if (clockwise) {
-        newRelX = relY;
-        newRelY = -relX;
-    } else {
-        newRelX = -relY;
-        newRelY = relX;
-    }
-
-    GridPos newPos;
-    newPos.x = newRelX + gg->pivot.x;
-    newPos.y = newRelY + gg->pivot.y;
-
-    return newPos;
 }
 

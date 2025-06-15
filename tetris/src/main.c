@@ -3,8 +3,8 @@
 
 #include "raylib.h"
 
-#include "game_grid.h"
 #include "constants.h"
+#include "game_grid.h"
 
 
 int main(void)
@@ -19,7 +19,7 @@ int main(void)
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
 
         if (!GameGridUpdate(&gg)) {
             break; // game over
@@ -29,6 +29,8 @@ int main(void)
 
         EndDrawing();
     }
+
+    GameGridDeinit(&gg);
 
     CloseWindow();
 

@@ -3,10 +3,6 @@
 
 #include <stdbool.h>
 
-#include "raylib.h"
-
-#include "constants.h"
-#include "mino.h"
 #include "structs.h"
 #include "yac_types.h"
 
@@ -23,8 +19,6 @@ typedef struct {
 } InputState;
 
 typedef struct {
-    // vec_mino grid; // origin is top-left
-    // vec_mm grid; // origin is top-left
     DaDaMino grid; // origin is top-left
     DaPieceType upcoming_pieces;
     DaPieceType bag;
@@ -44,13 +38,8 @@ typedef struct {
 
 
 void GameGridInit(GameGrid* gg);
+void GameGridDeinit(GameGrid* gg);
 bool GameGridUpdate(GameGrid* gg);
-PieceType GameGridPickNewPiece(GameGrid* gg);
-bool GameGridMoveDynamicMinos(GameGrid* gg, int right, int down);
-bool GameGridRotateDynamicMinos(GameGrid* gg, bool clockwise);
-void GameGridHoldPiece(GameGrid* gg);
-bool GameGridDeleteDynamicMinos(GameGrid* gg);
-bool GameGridSpawnNewTetromino(GameGrid* gg);
 void GameGridDraw(GameGrid* gg);
 
 

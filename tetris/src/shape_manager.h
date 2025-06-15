@@ -8,7 +8,6 @@
 
 DaMino ShapeManagerGetPiece(PieceType type, GridPos *pivot);
 DaPieceType ShapeManagerGetBag(void);
-// static PieceType PieceTypeFromInt(int n);
 
 
 #endif // SHAPE_MANAGER_H_

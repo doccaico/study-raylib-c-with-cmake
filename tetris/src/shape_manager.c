@@ -1,8 +1,13 @@
-#include "mino.h"
+#include <assert.h>
+
 #include "shape_manager.h"
-#include "yac_types.h"
+
+#include "constants.h"
+#include "mino.h"
+#include "structs.h"
 
 #include "yac_dynamic_array.h"
+#include "yac_types.h"
 
 
 static PieceType PieceTypeFromInt(int n);
